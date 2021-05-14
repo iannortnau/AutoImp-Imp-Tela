@@ -202,9 +202,9 @@ setInterval(buscadorDePedidos, 3000);
 async function buscadorDePedidos(){
   if(ativo == true){
     await getListaPedidos();
-    console.log("lista pedidos"+listaPedidos.length);
+    //console.log("lista pedidos"+listaPedidos.length);
     await getPedidos();
-    console.log("pedidos"+pedidos.length);
+    //console.log("pedidos"+pedidos.length);
 
     await verificaAlarme();
 
@@ -237,7 +237,7 @@ async function getPedidos(){
     // handle error
     console.log(error);
   });
-  console.log(auxlistapedidos);
+  //console.log(auxlistapedidos);
   for (let j = 0; j < auxlistapedidos.length; j++) {
     const element2 = auxlistapedidos[j];
 
@@ -264,6 +264,7 @@ var tamanhoAnterior=0;
 var tamanhoAtual=0;
 var inicial = true;
 async function verificaAlarme(){
+  var filaAutoImp = [];
   var alarme = false;
   var contPendente = 0;
 
@@ -287,13 +288,19 @@ async function verificaAlarme(){
   if(alarme == true && tamanhoAtual > tamanhoAnterior){
     for (let i = 0; i < diferenca; i++) {
       ipcRenderer.send("notificacaoPedido",);
+      filaAutoImp.push(listaPedidos[(listaPedidos.length-1)-i]);
       //console.log("aqui");
     }
+    //console.log(filaAutoImp);
+    autoImprecao(filaAutoImp);
   }else if(alarme == true && inicial == true){
     for (let i = 0; i < contPendente; i++) {
       ipcRenderer.send("notificacaoPedido",);
+      filaAutoImp.push(listaPedidos[(listaPedidos.length-1)-i]);
       //console.log("aqui2");
     }
+    //console.log(filaAutoImp);
+    autoImprecao(filaAutoImp);
   }
 
   if(alarme == true && alarmeDisparado == false){
@@ -309,14 +316,10 @@ async function verificaAlarme(){
   inicial = false;
 }
 
-async function vericaImprecao(){
-  var alarme = false;
-  
-  for (let i = 0; i < pedidos.length; i++) {
-    const element = pedidos[i];
-    if(element.statusPedido == "Pendente"){
-      alarme = true;
-    }
+async function autoImprecao(lista){
+  for (let i = 0; i < lista.length; i++) {
+    const element = lista[i];
+    
   }
 }
 
