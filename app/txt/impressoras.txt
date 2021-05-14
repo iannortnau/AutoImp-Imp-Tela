@@ -1,0 +1,1 @@
+[{"tipo":"Cozinha","nome":"impp","auto":true}]
