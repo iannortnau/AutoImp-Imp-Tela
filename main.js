@@ -10,6 +10,14 @@ function createWindow () {
     show: false,
     frame: false,
     icon: path.join(__dirname, 'app/img/icone.ico'),
+    width: 700,
+    height: 500,
+    minWidth: 700,
+    minHeight: 500,
+    maxWidth: 700,
+    maxHeight: 500,
+    maximizable: false,
+    center:true,
     menuBarVisible: false,
       webPreferences: {
         nodeIntegration: true,
@@ -18,8 +26,6 @@ function createWindow () {
         preload: path.join(__dirname, 'preload.js')     
       }
   });
-  const contents = mainWindow.webContents;
-  mainWindow.maximize();
   mainWindow.loadURL(`file://${__dirname}/app/index.html`);
   mainWindow.show();
   mainWindow.hide();
@@ -37,11 +43,16 @@ function createWindow () {
     return false;
   });
 
-  tray = new Tray("app/img/icone.ico");
+
+  tray = new Tray(__dirname+'/app/img/icone.ico');
   var contextMenu = Menu.buildFromTemplate([
     { label: 'Abrir', click:  function(){
         mainWindow.maximize();
         mainWindow.show();
+    } },
+    { label: 'Atualizar', click:  function(){
+      app.isQuiting = true;
+      mainWindow.reload();
     } },
     { label: 'Sair', click:  function(){
         app.isQuiting = true;
@@ -49,29 +60,37 @@ function createWindow () {
     } }
   ]);
   tray.setContextMenu(contextMenu);
-
-  //console.log(contents.getPrinters());
-  mainWindow.webContents.on('did-finish-load', () => {
-    fs.writeFile(__dirname+'/app/txt/impressorasEx.txt', JSON.stringify(contents.getPrinters()),{enconding:'utf-8',flag: 'w'}, function (err) {
-      if (err) throw err;
-      console.log('Arquivo salvo!');
-    });
+  /*
+  let dpWindow = new BrowserWindow({
+    maximizable: false,
+    icon: path.join(__dirname, 'app/img/icone.ico'),
+    width: 1000,
+    height: 800,
+    minWidth: 1000,
+    minHeight: 800,
+    maxWidth: 1000,
+    maxHeight: 800,
   });
+  dpWindow.loadURL(`https://supradelivery.com.br/version-test/pedidos`);
+
+  dpWindow.on('close', function (event) {
+    if(!app.isQuiting){
+        event.preventDefault();
+        dpWindow.minimize();
+    }
+
+    return false;
+  });*/
 }
 
 
 app.on('ready', createWindow);
-app.on('quit', function(){
-  fs.writeFile(__dirname+'/app/txt/impressorasEx.txt', "",{enconding:'utf-8',flag: 'w'}, function (err) {
-    if (err) throw err;
-    console.log('Arquivo Limpo');
-  });
- });
+app.on('quit', function(){});
 
 ipcMain.on('notificacaoPedido', () =>{
 //alert("bbbb");
   const notification = {
-    icon: path.join(__dirname, 'app/img/icone.ico'),
+    icon: path.join(__dirname+'/app/img/iconeUrl.jpg'),
     title: 'Novo pedido.',
     body: 'Você recebeu um novo pedido.'
   }
@@ -85,5 +104,5 @@ ipcMain.on('notificacaoImp', (evemt,text) =>{
       title: 'Impressora.',
       body: text[0]
     }
-    new Notification(notification).show()
-  });
+    new Notification(notification).show();
+});

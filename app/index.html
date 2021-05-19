@@ -7,6 +7,7 @@
     <link rel="stylesheet" href="css/font-awesome/css/all.css">
     <link rel="stylesheet" href="css/main.css">
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    <script src="https://cdn.rawgit.com/kjur/jsrsasign/c057d3447b194fa0a3fdcea110579454898e093d/jsrsasign-all-min.js"></script>
   </head>
   <body class="cor_fundo">
     <div class="cor_primaria sombra">
@@ -15,33 +16,33 @@
           <img src="img/icons8_print_64px.png" class="" style="height:40px;width:40px" alt="Avatar"> <b>Auto impressão e notificação</b> 
         </p>
         <button id="btSair" class="w3-bar-item w3-right w3-hover-shadow arredondado botao-login w3-text-white w3-red w3-section w3-ripple" style="font-size: small;">Sair</button>
+        <p id="nomeRestaurante" href="#" class="w3-bar-item w3-text-white w3-right" title="My Account" style="margin: 5.5px;">
+        </p>
       </div>
       <div id="notificacoes" class="" style="position:absolute; right:0px; top: 70px;"></div>
     </div>
 
-
      <!-- Page content -->
     <div style="margin-top: 3%;" class="we-container w3-content w3-padding w3-text-black" id="main">
-    
-    <div id="btMenu" class="w3-row flex w3-text-white">
-      <a class="botao-menu cor_primaria arredondado item w3-third w3-hover-shadow w3-ripple" onclick="indexClick(1)" on>Controle</a>
-      <a class="botao-menu cor_primaria arredondado item w3-third w3-hover-shadow w3-ripple" onclick="indexClick(2)">Pedidos</a>
-      <a class="botao-menu cor_primaria arredondado item w3-third w3-hover-shadow w3-ripple" onclick="indexClick(3)">Configurações</a>
-    </div>
+      <div id="btMenu" class="w3-row flex w3-text-white space-around">
+        <a class="botao-menu cor_primaria arredondado item w3-third w3-hover-shadow w3-ripple" onclick="indexClick(1)" on>Controle</a>
+        <a class="botao-menu cor_primaria arredondado item w3-third w3-hover-shadow w3-ripple" onclick="indexClick(3)">Impressoras</a>
+      </div>
 
-    <div id="frame" class="margin_grande" style="width: 100%; height: 100%;"></div>
-    <audio id="audio">
-      <source src="audio/alarm.wav" type="audio/wav">
-    </audio>
+      <div id="frame" class="margin_grande" style="width: 100%; height: 100%;"></div>
+      <audio id="audio">
+        <source src="audio/alarm.wav" type="audio/wav">
+      </audio>
     
 
   <!-- End page content -->
-  </div>
+    </div>
 
 
     
 
     <!-- You can also require other files to run in this process -->
+    <script src="js/qz.js"></script>
     <script src="js/renderer.js"></script>
   </body>
 </html>

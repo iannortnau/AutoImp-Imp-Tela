@@ -1,0 +1,38 @@
+<from name="imp" id="auxId" class="arredondado sombra w3-row w3-text-black w3-margin arredondado w3-padding" style="font-size: large;" onchange="attImp('auxId')">
+    <label for="nomeauxId">Nome:</label>
+    <span id="nomeauxId" class="input-cm-2" name="nome" value="auxNome" style="background-color: transparent;">auxNome</span>
+    <br><br>
+    <select class="w3-rigth"  id="layoutsauxId" name="layouts">
+        <option value="Cozinha" auxCozinha>Cozinha</option>
+        <option value="Curta" auxCurta>Curta</option>
+        <option value="Completa" auxCompleta>Completa</option>
+    </select>
+    <label for="layoutsauxId">:Tipo de impressão</label>
+    <br>
+    <select id="autoauxId" name="auto">
+        <option value="true" auxAutoTrue>Sim</option>
+        <option value="falce" auxAutoFalce>Não</option>
+    </select>
+    <label for="autoauxId">:Impressão automática a cada novo pedido</label>
+    <br>
+    <select id="pdvauxId" name="pdv">
+        <option value="true" auxpdvTrue>Sim</option>
+        <option value="falce" auxpdvFalce>Não</option>
+    </select>
+    <label for="pdvauxId">:Impressão de pedidos PDV</label>
+    <br>
+    <select id="padraoauxId" name="padrao">
+        <option value="true" auxPadraoTrue>Sim</option>
+        <option value="falce" auxPadraoFalce>Não</option>
+    </select>
+    <label for="padraoauxId">:Impressão manual</label>
+    <br>
+    <input class="input" type="number" id="viasauxId" style="background-color: white;" tabindex="30" value="auxVias" min="1">
+    <label for="viasauxId">:Vias</label>
+    <br><br>
+    <div class="flex" style="justify-content: space-between;">
+        <p id="btFromTest" onclick="tesstImp('auxNome','auxId')" class="w3-center w3-hover-shadow botao-login arredondado w3-text-white cor_primaria w3-section w3-ripple" style="width: 33%;">Test</p>
+        <p id="btFromExcluir" onclick="deletaImpspAt('auxId')" class="w3-center w3-hover-shadow botao-login arredondado w3-text-white w3-red w3-section w3-ripple" style="width: 33%;">Excluir</p>
+    </div>
+
+</from>

@@ -1,6 +1,7 @@
 .cor_primaria{background-color:#5e3ec5;}
 .cor_secundaria{background-color: #25376b6e;}
 .cor_terciaria{background-color: #25376b28;}
+.cor_quartenaria{background-color: #f2f2f2;}
 .cor_fundo{background-color: #f5f5f5;}
 .texto_cor_primaria{color: #5e3ec5!important;}
 .margin_pequena{margin: 0px; }
@@ -33,6 +34,12 @@ body,h1,h2,h3,h4,h5,h6 {font-family: "Raleway", Arial, Helvetica, sans-serif}
 	margin: 0 auto;
 	display: flex;
 	justify-content: space-around;
+}
+
+.container2 {
+	margin: 0 auto;
+	display: flex;
+	justify-content: center;
 }
 
 .column {
@@ -123,6 +130,12 @@ body,h1,h2,h3,h4,h5,h6 {font-family: "Raleway", Arial, Helvetica, sans-serif}
 	border-top-width: 1;
 	border-bottom-width: 0px;
 	padding: 0px;
+	text-align: center;
+}
+
+.input{
+	width: 50px;
+	border-width: 1px;
 	text-align: center;
 }
 

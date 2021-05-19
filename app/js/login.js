@@ -24,7 +24,7 @@ async function loga(event){
                 console.log('Arquivo salvo!');
             });
         }
-        console.log(element);
+        //console.log(element);
     }
     if(saida == 1){
         notifica('notificacao','Logado com sucesso');
