@@ -105,7 +105,7 @@ async function createWindow() {
   mainWindow = new BrowserWindow({
     show: false,
     frame: false,
-    icon: path.join(__dirname, 'app/img/icone.ico'),
+    icon: path.join(__dirname, 'app/img/icone2.ico'),
     width: 700,
     height: 500,
     minWidth: 700,
@@ -150,7 +150,7 @@ async function createWindow() {
   });
 
 
-  tray = new Tray(__dirname + '/app/img/icone.ico');
+  tray = new Tray(__dirname + 'app/img/icone2.ico');
   var contextMenu = Menu.buildFromTemplate([{
       label: 'Configuração',
       click: function () {
