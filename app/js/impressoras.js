@@ -2,10 +2,12 @@ printaImpressoras();
 listaImpressoras();
 mudaTextoSeletor("Selecione a impressora");
 
+//muda o placeholder
 function mudaTextoSeletor(texto) {
     $("#seletorImp").text(texto);
 }
 
+//lista as impressoras existentes
 async function listaImpressoras() {
     $("#listaImpressorasEx").html('<a href="#" class="w3-bar-item w3-button w3-center"><i id="controleSpin" class="fas fa-circle-notch w3-spin"></i></a>');
     const impressorasExistentes = await qz.printers.find().then(function (data) {
@@ -21,13 +23,16 @@ async function listaImpressoras() {
 
 }
 
+//ouve o botão btImpsAdiciona
 $("#btImpsAdiciona").on("click",function(event){
     const nome = event.target.nextElementSibling.children[0].children[1].textContent;
     if(nome != "Selecione a impressora"){
         registraImpsAt("Completa", nome, false, false, 1, uuid.v4(), false);
     }
+    mudaTextoSeletor("Selecione a impressora");
 });
 
+//coloca as impressoas na tela
 async function printaImpressoras(){
     $("#impressorasAtivasLista").html('');
     var htmlBase;
@@ -96,6 +101,7 @@ async function printaImpressoras(){
     }
 }
 
+//registra impressoras
 async function registraImpsAt(tipo, nome, auto, padrao, vias, id, pdv) {
     var save = -1;
     for (let i = 0; i < impressorasAtivas.length; i++) {
@@ -116,7 +122,7 @@ async function registraImpsAt(tipo, nome, auto, padrao, vias, id, pdv) {
         impressorasAtivas[save].pdv = pdv;
     }
 
-    await fs.writeFile(__dirname + '/../app/txt/impressoras.txt', JSON.stringify(impressorasAtivas), {
+    await fs.writeFile('C:/Supra_Delivery/impressoras.txt', JSON.stringify(impressorasAtivas), {
         enconding: 'utf-8',
         flag: 'w'
     }, function (err) {
@@ -144,7 +150,7 @@ async function deletaImpspAt(id) {
         impressorasAtivas.splice(save, 1);
     }
 
-    fs.writeFile(__dirname+'/../app/txt/impressoras.txt', JSON.stringify(impressorasAtivas),{enconding:'utf-8',flag: 'w'}, function (err) {
+    fs.writeFile('C:/Supra_Delivery/impressoras.txt', JSON.stringify(impressorasAtivas),{enconding:'utf-8',flag: 'w'}, function (err) {
         if (err) throw err;
         console.log('Arquivo salvo!');
     });
@@ -153,7 +159,7 @@ async function deletaImpspAt(id) {
     printaImpressoras();
 }
 
-
+//atualiza as informações da impressora
 function attImp(id) {
     var tipo = $("#layouts"+id)[0].value;
     var nome = $("#nome"+id)[0].textContent;
@@ -172,6 +178,7 @@ function attImp(id) {
     //console.log(val);
 }
 
+//imprime folha de teste
 function tesstImp(nome,id){
     var impp = new Impp;
     for (let i = 0; i < impressorasAtivas.length; i++) {

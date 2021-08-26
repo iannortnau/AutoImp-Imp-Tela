@@ -1,6 +1,6 @@
- //verifica por novos pedidos
  hideAndShow();
 
+ //controla o visal da tela controle
  function hideAndShow(){
      if(ativo == true){
          $("#controleX").hide();

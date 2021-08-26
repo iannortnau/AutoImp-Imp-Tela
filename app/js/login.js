@@ -1,4 +1,6 @@
 //pega o email e conefere se é válido e salva ele no txt
+
+
 async function loga(event){
     const email = event.target.email.value;
 
@@ -19,10 +21,7 @@ async function loga(event){
         const elementId = usuarios[i]._id;
         if(email === elementEmail){
             saida = 1;
-            fs.writeFile(__dirname+'/txt/id.txt', elementId,{enconding:'utf-8',flag: 'w'}, function (err) {
-                if (err) throw err;
-                console.log('Arquivo salvo!');
-            });
+            await fss.writeFile('C:/Supra_Delivery/id.txt', elementId,{enconding:'utf-8',flag: 'w'}).then(function(){console.log("salvo o id")});
         }
         //console.log(element);
     }
@@ -34,3 +33,4 @@ async function loga(event){
     }
 }
 //contato@brasileiroburguer.com.br
+//contato@emillypizzaria.com.br

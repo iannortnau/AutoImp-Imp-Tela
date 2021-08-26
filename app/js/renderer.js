@@ -4,6 +4,8 @@ const {
 window.$ = window.jQuery = require('jquery');
 const http = require('http');
 const axios = require('axios');
+const axios2 = axios.create();
+axios2.defaults.timeout = 5000;
 var fs = require('fs');
 const {
   event
@@ -13,7 +15,9 @@ const {
 } = require('inspector');
 const uuid = require("uuid");
 const token = "e83721659fb721f0164c36718e4bbc17";
-const apiUrl = "https://supradelivery.com.br/version-test/api/1.1/obj";
+const apiUrl = "https://supradelivery.com.br/api/1.1/obj";
+//const apiUrl = "https://supradelivery.com.br/version-test/api/1.1/obj";
+const fss = require('fs').promises;
 
 class Impp {
   constructor(nome, texto) {
@@ -33,7 +37,7 @@ class Ipressora {
   }
 }
 class Pedido {
-  constructor(id, pedidoImpresso, pedidoLayoutCompleto, createdDate, statusPedido, pedidoLayoutCozinha, pedidoLayoutCurto, pdv) {
+  constructor(id, pedidoImpresso, pedidoLayoutCompleto, createdDate, statusPedido, pedidoLayoutCozinha, pedidoLayoutCurto, pdv, pedido_aprovado_boolean) {
     this.id = id;
     this.pedidoImpresso = pedidoImpresso;
     this.pedidoLayoutCompleto = pedidoLayoutCompleto;
@@ -42,34 +46,113 @@ class Pedido {
     this.pedidoLayoutCozinha = pedidoLayoutCozinha;
     this.pedidoLayoutCurto = pedidoLayoutCurto;
     this.pdv = pdv;
+    this.pedido_aprovado_boolean = pedido_aprovado_boolean;
   }
 }
 
 var listaImpp = [];
-var listaPedidos;
+var listaPedidos = [];
 var pedidos = [];
 var impressorasAtivas = [];
 var ativo = false;
 var id;
+var autoAceita = false;
+var config = null;
+var alarm;
 
+//carrega funções inicias
 getImpsAt();
 verificaUser();
 
-//registraImpsAt("Cozinha","impTermica",true);
+//abre e fecha e menu de impressoras
+function myFunction() {
+  var x = document.getElementById("listaImpressorasEx");
+  if (x.className.indexOf("w3-show") == -1) {
+    x.className += " w3-show";
+  } else {
+    x.className = x.className.replace(" w3-show", "");
+  }
+}
 
-//
-/*
-registraImpsAt("Cozinha","ELGIN i9(USB)",true,false,2);
-registraImpsAt("Curta","impp",true,false,3);
-registraImpsAt("Completa","impp",true,false,3);
-*/
+//pega as confifurações atuais
+async function getConfig() {
+  config = await fss.readFile('C:/Supra_Delivery/configuracoes.txt', 'utf-8').then(function (data) {
+    return JSON.parse(data);
+  });
+}
 
+function mudaAlerta() {
+  alarm = $("#autoAlerta")[0].value;
+  if (alarm == "true") {
+    alarm = true
+  };
+  if (alarm == "falce") {
+    alarm = false
+  };
+  console.log(alarm);
+
+  config.alarm = alarm;
+  fs.writeFile('C:/Supra_Delivery/configuracoes.txt', JSON.stringify(config), {
+    enconding: 'utf-8',
+    flag: 'w'
+  }, function (err) {
+    if (err) throw err;
+    console.log('Arquivo salvo!');
+  });
+
+}
+
+
+//muda o auto aceitar pedidos
+function mudaAutoAc() {
+  autoAceita = $("#autoAc")[0].value;
+  if (autoAceita == "true") {
+    autoAceita = true
+  };
+  if (autoAceita == "falce") {
+    autoAceita = false
+  };
+  console.log(autoAceita);
+
+  config.autoAc = autoAceita;
+  fs.writeFile('C:/Supra_Delivery/configuracoes.txt', JSON.stringify(config), {
+    enconding: 'utf-8',
+    flag: 'w'
+  }, function (err) {
+    if (err) throw err;
+    console.log('Arquivo salvo!');
+  });
+}
+
+//muda se deve ou n carregas o espelhamento
+async function mudaSegundatela() {
+  autoS = $("#autoSegundaTela")[0].value;
+  if (autoS == "true") {
+    autoS = true
+  };
+  if (autoS == "falce") {
+    autoS = false
+  };
+  console.log(autoS);
+
+  config.segundaTela = autoS;
+  fs.writeFile('C:/Supra_Delivery/configuracoes.txt', JSON.stringify(config), {
+    enconding: 'utf-8',
+    flag: 'w'
+  }, function (err) {
+    if (err) throw err;
+    console.log('Arquivo salvo!');
+    ipcRenderer.send("recarrega", );
+  })
+}
+
+//pega as impressoras atuais
 function getImpsAt() {
-  fs.readFile(__dirname + '/../app/txt/impressoras.txt', 'utf-8', function (err, data) {
+  fs.readFile('C:/Supra_Delivery/impressoras.txt', 'utf-8', function (err, data) {
     if (err) throw err;
     if (data.length == 0) {
       let text = ["Você não tem impressoras registradas."];
-      ipcRenderer.send("notificacaoImp", text);
+      //ipcRenderer.send("notificacaoImp", text);
     } else {
       impressorasAtivas = JSON.parse(data);
       console.log(impressorasAtivas);
@@ -78,11 +161,26 @@ function getImpsAt() {
 }
 
 //verifica se existe um id já salvo
-function verificaUser() {
-  fs.readFile(__dirname + '/../app/txt/id.txt', 'utf-8', async function (err, data) {
+async function verificaUser() {
+  await getConfig();
+  autoAceita = config.autoAc;
+  alarm = config.alarm;
+  /*
+  if(autoAceita == true){
+    $("#placeh").html("Sim");
+  }else{
+    $("#placeh").html("Não");
+  }
+  if(config.segundaTela == true){
+    $("#placehS").html("Sim");
+  }else{
+    $("#placehS").html("Não");
+  }*/
+  fs.readFile('C:/Supra_Delivery/id.txt', 'utf-8', async function (err, data) {
     if (err) throw err;
 
     if (data.length == 0) {
+      $('#test').hide();
       $('#nomeRestaurante').hide();
       $('#btSair').hide();
       $('#btMenu').hide();
@@ -94,12 +192,13 @@ function verificaUser() {
         }
       });
     } else {
+      $('#test').show();
       $('#btSair').show();
       $('#btMenu').show();
       id = data;
       //getImpsAt();
       await getLogo();
-      var nome = await axios.get(apiUrl + '/Loja/' + id)
+      var nome = await axios2.get(apiUrl + '/Loja/' + id)
         .then(function (response) {
           // handle success
           //return response.data.response.results;
@@ -108,10 +207,11 @@ function verificaUser() {
         })
         .catch(function (error) {
           // handle error
+          ipcRenderer.send("notificacaoErroInternet", );
           console.log(error);
         });
       setTimeout(() => {
-        $('#nomeRestaurante').html('<img src="img/iconeUrl.jpg" class="" style="height:40px;width:40px" alt="Avatar"> <b>' +nome+ '<b>');
+        $('#nomeRestaurante').html('<img src="C:/Supra_Delivery/iconeUrl.jpg" class="" style="height:40px;width:40px" alt="Avatar"> <b>' + nome + '<b>');
         $('#nomeRestaurante').show();
       }, 2000);
       ativo = true;
@@ -129,7 +229,7 @@ function verificaUser() {
 
 //pega o logo mais atual para botar na notificação
 async function getLogo() {
-  var logoUrl = await axios.get(apiUrl + '/Loja/' + id)
+  var logoUrl = await axios2.get(apiUrl + '/Loja/' + id)
     .then(function (response) {
       // handle success
       //return response.data.response.results;
@@ -138,14 +238,16 @@ async function getLogo() {
     })
     .catch(function (error) {
       // handle error
+      ipcRenderer.send("notificacaoErroInternet", );
       console.log(error);
     });
-  const file = fs.createWriteStream(__dirname + '/img/iconeUrl.jpg');
+  const file = fs.createWriteStream('C:/Supra_Delivery/iconeUrl.jpg');
 
-  const request = http.get("http:" + logoUrl,function (response) {
+  const request = http.get("http:" + logoUrl, function (response) {
     response.pipe(file);
   });
 }
+
 
 //função de notificação
 var intervalo;
@@ -181,14 +283,21 @@ function notifica(tipo, mensagem) {
 
 //botão sair desloga do programa
 $('#btSair').on('click', function (event) {
-  fs.writeFile(__dirname + '/txt/id.txt', "", {
-    enconding: 'utf-8',
-    flag: 'w'
-  }, function (err) {
-    if (err) throw err;
-    console.log('Arquivo salvo!');
-  });
-  window.location.reload()
+  var x;
+  var r=confirm("Deseja sair da conta?");
+  if (r==true){
+    fs.writeFile('C:/Supra_Delivery/id.txt', "", {
+      enconding: 'utf-8',
+      flag: 'w'
+    }, function (err) {
+      if (err) throw err;
+      console.log('Arquivo salvo!');
+    });
+    window.location.reload()
+  }else{
+  }
+
+
 });
 
 //escuta os botões do menu
@@ -199,6 +308,15 @@ function indexClick(aux) {
   if (aux == 1) {
     $.ajax({
       url: "telas/controle.html",
+      context: document.body,
+      success: function (response) {
+        $('#frame').html(response);
+      }
+    });
+  }
+  if (aux == 2) {
+    $.ajax({
+      url: "telas/configuracoes.html",
       context: document.body,
       success: function (response) {
         $('#frame').html(response);
@@ -222,6 +340,7 @@ setInterval(main, 1000);
 var livre = 1;
 async function main() {
   if (ativo == true && livre == 1) {
+    console.log("rodando");
     livre = 0;
     await getListaPedidos();
     await getPedidos();
@@ -233,7 +352,7 @@ async function main() {
 
 //pega a lista mais atual de pedidos
 async function getListaPedidos() {
-  listaPedidos = await axios.get(apiUrl + '/Loja/' + id)
+  listaPedidos = await axios2.get(apiUrl + '/Loja/' + id)
     .then(function (response) {
       // handle success
       //return response.data.response.results;
@@ -242,8 +361,14 @@ async function getListaPedidos() {
     })
     .catch(function (error) {
       // handle error
+      ipcRenderer.send("notificacaoErroInternet", );
       console.log(error);
+      listaPedidos = [];
     });
+
+  if (listaPedidos == undefined) {
+    listaPedidos = [];
+  }
 }
 
 //pega as informações dos pedidos
@@ -254,14 +379,16 @@ async function getPedidos() {
   var dia = d.getDate();
   //console.log('"'+ano+'-'+mes+'-'+dia+'"');
   pedidos = [];
-  const auxlistapedidos = await axios.get(apiUrl + '/Pedido?constraints=[ { "key": "loja_custom_loja", "constraint_type": "equals", "value": "' + id + '" } ,{ "key": "status_pedido_option_status_pedido", "constraint_type": "not equal", "value": "Cancelado"},{ "key": "status_pedido_option_status_pedido", "constraint_type": "not equal", "value": "Em trânsito"},{ "key": "status_pedido_option_status_pedido", "constraint_type": "not equal", "value": "Entregue"},{ "key": "Created Date", "constraint_type": "greater than", "value": "' + ano + '-' + mes + '-' + dia + '"}]')
+  const auxlistapedidos = await axios2.get(apiUrl + '/Pedido?constraints=[ { "key": "loja_custom_loja", "constraint_type": "equals", "value": "' + id + '" } ,{ "key": "status_pedido_option_status_pedido", "constraint_type": "not equal", "value": "Cancelado"},{ "key": "status_pedido_option_status_pedido", "constraint_type": "not equal", "value": "Em trânsito"},{ "key": "status_pedido_option_status_pedido", "constraint_type": "not equal", "value": "Entregue"},{ "key": "Created Date", "constraint_type": "greater than", "value": "' + ano + '-' + mes + '-' + dia + '"}]')
     .then(function (response) {
       //console.log(response.data.response.results);
       return response.data.response.results;
     })
     .catch(function (error) {
       // handle error
+      ipcRenderer.send("notificacaoErroInternet", );
       console.log(error);
+      return [];
     });
 
   for (let j = 0; j < auxlistapedidos.length; j++) {
@@ -278,13 +405,14 @@ async function getPedidos() {
       pedido.pedidoLayoutCurto = element2.pedido_layout_curto_text;
       pedido.statusPedido = element2.status_pedido_option_status_pedido;
       pedido.pdv = element2.pdv_boolean;
+      pedido.pedido_aprovado_boolean = element2.pedido_aprovado_boolean;
 
       pedidos.push(pedido);
     }
   }
 }
 
-
+//controle da logica de notificação alarme e impreção de pedidos
 var alarmeDisparado = false;
 var intervaloAlarme;
 var tamanhoAnterior = 0;
@@ -309,16 +437,18 @@ async function verificaAlarmeNotificacaoPedidos() {
   for (let i = 0; i < pedidos.length; i++) {
     //console.log("for: "+i);
     const element = pedidos[i];
-    if (element.statusPedido == "Pendente" && element.pdv != true) {
-      alarme = true;
-      contPendente++;
+    if (autoAceita == false) {
+      if (element.statusPedido == "Pendente" && element.pdv != true && element.pedido_aprovado_boolean == true) {
+        alarme = true;
+        contPendente++;
+      }
     }
     if (element.statusPedido != "Pendente" && element.pedidoImpresso == false && element.pdv != true) {
       contImprimir.push(element);
       var data = {
         pedido_impresso_boolean: true
       };
-      await axios
+      await axios2
         .patch(apiUrl + "/Pedido/" + element.id, data, {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -328,6 +458,7 @@ async function verificaAlarmeNotificacaoPedidos() {
           console.log(response);
         })
         .catch(function (error) {
+          ipcRenderer.send("notificacaoErroInternet", );
           console.log(error);
         });
     }
@@ -336,7 +467,7 @@ async function verificaAlarmeNotificacaoPedidos() {
       var data = {
         pedido_impresso_boolean: true
       };
-      await axios
+      await axios2
         .patch(apiUrl + "/Pedido/" + element.id, data, {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -346,8 +477,34 @@ async function verificaAlarmeNotificacaoPedidos() {
           console.log(response);
         })
         .catch(function (error) {
+          ipcRenderer.send("notificacaoErroInternet", );
           console.log(error);
         });
+    }
+    if (autoAceita == true) {
+      console.log("aa");
+      if (element.statusPedido == "Pendente" && element.pdv != true && element.pedido_aprovado_boolean == true) {
+        alarme = true;
+        contPendente++;
+        ipcRenderer.send("notificacaoPedido", );
+        var data = {
+          status_pedido_option_status_pedido: "Em preparo",
+        };
+        await axios2
+          .patch(apiUrl + "/Pedido/" + element.id, data, {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            }
+          })
+          .then(function (response) {
+            console.log(response);
+          })
+          .catch(function (error) {
+            ipcRenderer.send("notificacaoErroInternet", );
+            console.log(error);
+          });
+
+      }
     }
   }
   //console.log("fim for");
@@ -361,15 +518,19 @@ async function verificaAlarmeNotificacaoPedidos() {
 
   if (alarme == true && tamanhoAtual > tamanhoAnterior) {
     for (let i = 0; i < diferenca; i++) {
-      ipcRenderer.send("notificacaoPedido", );
+      if (autoAceita == false) {
+        ipcRenderer.send("notificacaoPedido", );
+      }
       filaAutoImp.push(listaPedidos[(listaPedidos.length - 1) - i]);
 
     }
 
     autoImprecao(filaAutoImp);
   } else if (alarme == true && inicial == true) {
-    for (let i = 0; i < contPendente; i++) {
+    if (autoAceita == false) {
       ipcRenderer.send("notificacaoPedido", );
+    }
+    for (let i = 0; i < contPendente; i++) {
       filaAutoImp.push(listaPedidos[(listaPedidos.length - 1) - i]);
 
     }
@@ -380,7 +541,9 @@ async function verificaAlarmeNotificacaoPedidos() {
   if (alarme == true && alarmeDisparado == false) {
     alarmeDisparado = true;
     intervaloAlarme = setInterval(() => {
-      document.getElementById("audio").play();
+      if(alarm == true){
+        document.getElementById("audio").play();
+      }
     }, 500);
   } else if (alarme == false) {
     clearInterval(intervaloAlarme);
@@ -396,14 +559,16 @@ async function manualImprecao() {
   var ano = d.getFullYear();
   var mes = d.getMonth() + 1;
   var dia = d.getDate();
-  const manualPedidos = await axios.get(apiUrl + '/Pedido?constraints=[ { "key": "loja_custom_loja", "constraint_type": "equals", "value": "' + id + '" } ,{ "key": "print_manual_boolean", "constraint_type": "equals", "value": true},{ "key": "Created Date", "constraint_type": "greater than", "value": "' + ano + '-' + mes + '-' + dia + '"}]')
+  const manualPedidos = await axios2.get(apiUrl + '/Pedido?constraints=[ { "key": "loja_custom_loja", "constraint_type": "equals", "value": "' + id + '" } ,{ "key": "print_manual_boolean", "constraint_type": "equals", "value": true},{ "key": "Created Date", "constraint_type": "greater than", "value": "' + ano + '-' + mes + '-' + dia + '"}]')
     .then(function (response) {
       //console.log(response.data.response.results);
       return response.data.response.results;
     })
     .catch(function (error) {
       // handle error
+      ipcRenderer.send("notificacaoErroInternet", );
       console.log(error);
+      return [];
     });
 
   for (let i = 0; i < manualPedidos.length; i++) {
@@ -411,7 +576,7 @@ async function manualImprecao() {
     var data = {
       print_manual_boolean: false
     };
-    await axios
+    await axios2
       .patch(apiUrl + "/Pedido/" + impPedido._id, data, {
         headers: {
           Authorization: `Bearer ${token}`,
@@ -421,6 +586,7 @@ async function manualImprecao() {
         console.log(response);
       })
       .catch(function (error) {
+        ipcRenderer.send("notificacaoErroInternet", );
         console.log(error);
       });
     console.log(impPedido);
@@ -531,6 +697,7 @@ async function normalImprecao(lista) {
   }
 }
 
+//impressão depois de aceitar o pedido
 async function normalImprecaoPdv(lista) {
   for (let i = 0; i < lista.length; i++) {
     const impPedido = lista[i];
@@ -573,6 +740,7 @@ function findPrinters() {
   });
 }
 
+//loop de impressão a cada um segundo manda imprimir os pedidos na lista de impressão
 var indexListaImpp = 0;
 var intert = setInterval(function () {
   if (indexListaImpp == listaImpp.length) {

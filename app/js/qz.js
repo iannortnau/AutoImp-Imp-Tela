@@ -74,6 +74,21 @@ qz.security.setCertificatePromise(function(resolve, reject) {
           }
       };
   });
-  qz.websocket.connect({}).then(function() {
-    console.log("Connected!");
-  });
+
+  conecta();
+  var alerta = 0;
+  function conecta(){
+    console.log("tentando conectar");
+    qz.websocket.connect({}).then(function() {
+        console.log("Connected!");
+      }).catch(function(e){
+
+        if(alerta == 0){
+            ipcRenderer.send("notificacaoQz", );
+            alerta=1;
+        }
+        conecta();
+      });
+  }
+
+ 
